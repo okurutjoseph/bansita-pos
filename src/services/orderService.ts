@@ -11,8 +11,16 @@ export interface LineItem {
   subtotal_tax: string;
   total: string;
   total_tax: string;
-  taxes: any[];
-  meta_data: any[];
+  taxes: Array<{
+    id: number;
+    total: string;
+    subtotal: string;
+  }>;
+  meta_data: Array<{
+    id: number;
+    key: string;
+    value: string;
+  }>;
   sku: string;
   price: number;
   image: {
@@ -76,9 +84,42 @@ export interface Order {
   line_items: LineItem[];
 }
 
-export async function getOrders(params = {}): Promise<Order[]> {
+export interface CreateOrderData {
+  payment_method?: string;
+  payment_method_title?: string;
+  set_paid?: boolean;
+  billing?: Order['billing'];
+  shipping?: Order['shipping'];
+  customer_id?: number;
+  customer_note?: string;
+  line_items: Array<{
+    product_id: number;
+    quantity: number;
+    variation_id?: number;
+    price?: number;
+  }>;
+  shipping_lines?: Array<{
+    method_id: string;
+    method_title: string;
+    total: string;
+  }>;
+}
+
+export interface OrderParams {
+  status?: string;
+  customer?: number;
+  per_page?: number;
+  page?: number;
+  search?: string;
+  after?: string;
+  before?: string;
+  order?: 'asc' | 'desc';
+  orderby?: string;
+}
+
+export async function getOrders(params: OrderParams = {}): Promise<Order[]> {
   try {
-    const response = await api.get('orders', params);
+    const response = await api.get<Order[]>('orders', params);
     return response.data;
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -88,7 +129,7 @@ export async function getOrders(params = {}): Promise<Order[]> {
 
 export async function getOrder(id: number): Promise<Order | null> {
   try {
-    const response = await api.get(`orders/${id}`);
+    const response = await api.get<Order>(`orders/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching order ${id}:`, error);
@@ -96,9 +137,9 @@ export async function getOrder(id: number): Promise<Order | null> {
   }
 }
 
-export async function createOrder(orderData: any): Promise<Order | null> {
+export async function createOrder(orderData: CreateOrderData): Promise<Order | null> {
   try {
-    const response = await api.post('orders', orderData);
+    const response = await api.post<Order>('orders', orderData);
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
