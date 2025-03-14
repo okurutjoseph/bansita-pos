@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Plus, X, Tag, Package, Save } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Plus, X, Save } from 'lucide-react';
 import { getProducts, getProduct, Product } from '@/services/productService';
 import { PLACEHOLDER_IMAGE } from '@/components/PlaceholderImage';
 import { formatCurrency } from '@/lib/currency';
@@ -129,10 +129,10 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       {/* Products List Section */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex justify-between items-center p-6 mb-2">
           <h2 className="text-2xl font-bold">Products</h2>
           <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
             <Plus size={16} />
@@ -140,7 +140,7 @@ export default function ProductsPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mx-6">
           <div className="p-6 border-b border-gray-200">
             <form onSubmit={handleSearch} className="flex gap-4">
               <div className="relative flex-1">
@@ -201,7 +201,7 @@ export default function ProductsPage() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 relative flex-shrink-0">
+                          <div className="h-20 w-20 relative flex-shrink-0">
                             <Image
                               src={product.images && product.images.length > 0 ? product.images[0].src : PLACEHOLDER_IMAGE}
                               alt={product.name}
@@ -317,7 +317,7 @@ export default function ProductsPage() {
           ) : selectedProduct ? (
             <div className="space-y-6">
               {/* Product Image */}
-              <div className="h-64 relative rounded-lg overflow-hidden">
+              <div className="h-96 relative rounded-lg overflow-hidden">
                 <Image
                   src={selectedProduct.images && selectedProduct.images.length > 0 
                     ? selectedProduct.images[0].src 
