@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useClerk } from '@clerk/nextjs';
 import { 
   PlusCircle, 
   ShoppingCart, 
@@ -24,6 +25,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { signOut } = useClerk();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -87,7 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           </Link>
         </div>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1">
           <nav className="flex flex-col items-center gap-4 py-4">
             {navItems.map((item) => (
               <Link 
@@ -105,7 +107,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </div>
         
         <div className="p-4 flex flex-col items-center">
-          <button className="flex flex-col items-center hover:bg-blue-600 p-2 rounded-md w-full">
+          <button 
+            onClick={() => signOut()}
+            className="flex flex-col items-center hover:bg-blue-600 p-2 rounded-md w-full"
+          >
             <LogOut className={`${collapsed ? 'h-6 w-6' : 'h-6 w-6'}`} />
             {!collapsed && <span className="mt-1 text-xs">Logout</span>}
           </button>

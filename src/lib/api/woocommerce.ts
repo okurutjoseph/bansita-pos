@@ -135,7 +135,7 @@ export interface Customer {
 // API functions
 export async function getProducts(): Promise<Product[]> {
   try {
-    const response = await woocommerceApi.get('/wp-json/wc/v3/products', {
+    const response = await woocommerceApi.get('/products', {
       params: {
         per_page: 100,
       },
@@ -149,7 +149,7 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getOrders(): Promise<Order[]> {
   try {
-    const response = await woocommerceApi.get('/wp-json/wc/v3/orders', {
+    const response = await woocommerceApi.get('/orders', {
       params: {
         per_page: 100,
       },
@@ -163,7 +163,7 @@ export async function getOrders(): Promise<Order[]> {
 
 export async function getCustomers(): Promise<Customer[]> {
   try {
-    const response = await woocommerceApi.get('/wp-json/wc/v3/customers', {
+    const response = await woocommerceApi.get('/customers', {
       params: {
         per_page: 100,
       },
@@ -195,7 +195,7 @@ export interface CreateOrderData {
 
 export async function createOrder(orderData: CreateOrderData): Promise<Order | null> {
   try {
-    const response = await woocommerceApi.post('/wp-json/wc/v3/orders', orderData);
+    const response = await woocommerceApi.post('/orders', orderData);
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
@@ -205,7 +205,7 @@ export async function createOrder(orderData: CreateOrderData): Promise<Order | n
 
 export async function updateOrderStatus(orderId: number, status: string): Promise<Order | null> {
   try {
-    const response = await woocommerceApi.put(`/wp-json/wc/v3/orders/${orderId}`, {
+    const response = await woocommerceApi.put(`/orders/${orderId}`, {
       status,
     });
     return response.data;
