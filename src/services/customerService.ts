@@ -33,9 +33,17 @@ export interface Customer {
   avatar_url: string;
 }
 
-export async function getCustomers(params = {}): Promise<Customer[]> {
+export interface CustomerParams {
+  search?: string;
+  per_page?: number;
+  page?: number;
+  order?: 'asc' | 'desc';
+  orderby?: string;
+}
+
+export async function getCustomers(params: CustomerParams = {}): Promise<Customer[]> {
   try {
-    const response = await api.get('customers', params);
+    const response = await api.get<Customer[]>('customers', params);
     return response.data;
   } catch (error) {
     console.error('Error fetching customers:', error);
@@ -45,7 +53,7 @@ export async function getCustomers(params = {}): Promise<Customer[]> {
 
 export async function getCustomer(id: number): Promise<Customer | null> {
   try {
-    const response = await api.get(`customers/${id}`);
+    const response = await api.get<Customer>(`customers/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching customer ${id}:`, error);
