@@ -78,13 +78,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 relative">
                 <Image 
-                  src="/logo.svg" 
+                  src="/bansita.svg" 
                   alt="Bansita POS" 
                   fill 
                   className="object-contain"
                 />
               </div>
-              {!collapsed && <span className="mt-1 text-xs font-semibold">Bansita POS</span>}
             </div>
           </Link>
         </div>

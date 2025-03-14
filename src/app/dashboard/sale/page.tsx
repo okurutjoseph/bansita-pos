@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Search, Filter, Barcode, Plus, Minus, X, CreditCard } from 'lucide-react';
 import { getProducts, Product } from '@/services/productService';
 import { useCart } from '@/contexts/CartContext';
+import { PLACEHOLDER_IMAGE } from '@/components/PlaceholderImage';
 
 export default function SalePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -118,7 +119,7 @@ export default function SalePage() {
                   <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                     <div className="h-40 relative">
                       <Image
-                        src={product.images && product.images.length > 0 ? product.images[0].src : 'https://via.placeholder.com/100'}
+                        src={product.images && product.images.length > 0 ? product.images[0].src : PLACEHOLDER_IMAGE}
                         alt={product.images && product.images.length > 0 ? product.images[0].alt : product.name}
                         fill
                         className="object-cover"
@@ -174,7 +175,7 @@ export default function SalePage() {
                 <div key={item.id} className="flex items-center gap-4 border-b border-gray-100 pb-4">
                   <div className="h-16 w-16 relative flex-shrink-0">
                     <Image
-                      src={item.image || 'https://via.placeholder.com/100'}
+                      src={item.image || PLACEHOLDER_IMAGE}
                       alt={item.name}
                       fill
                       className="object-cover rounded-md"

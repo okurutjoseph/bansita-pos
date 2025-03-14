@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Plus } from 'lucide-react';
 import { getProducts, Product } from '@/services/productService';
+import { PLACEHOLDER_IMAGE } from '@/components/PlaceholderImage';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -112,7 +113,7 @@ export default function ProductsPage() {
                       <div className="flex items-center">
                         <div className="h-10 w-10 relative flex-shrink-0">
                           <Image
-                            src={product.images && product.images.length > 0 ? product.images[0].src : 'https://via.placeholder.com/100'}
+                            src={product.images && product.images.length > 0 ? product.images[0].src : PLACEHOLDER_IMAGE}
                             alt={product.name}
                             fill
                             className="object-cover rounded-md"
