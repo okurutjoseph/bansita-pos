@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { getOrders, Order } from '@/services/orderService';
+import { formatCurrency } from '@/lib/currency';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -148,7 +149,7 @@ export default function OrdersPage() {
                       <div className="text-sm text-gray-500">{order.billing.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">${parseFloat(order.total).toFixed(2)}</div>
+                      <div className="text-sm font-medium text-gray-900">{formatCurrency(parseFloat(order.total))}</div>
                       <div className="text-xs text-gray-500">{order.line_items.length} items</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

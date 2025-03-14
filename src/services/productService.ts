@@ -9,11 +9,13 @@ export interface Product {
   stock_quantity: number;
   images: { id: number; src: string; alt: string }[];
   categories: { id: number; name: string; slug: string }[];
+  description?: string;
+  short_description?: string;
 }
 
 export async function getProducts(params = {}): Promise<Product[]> {
   try {
-    const response = await api.get('products', params);
+    const response = await api.get<Product[]>('products', params);
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -23,7 +25,7 @@ export async function getProducts(params = {}): Promise<Product[]> {
 
 export async function getProduct(id: number): Promise<Product | null> {
   try {
-    const response = await api.get(`products/${id}`);
+    const response = await api.get<Product>(`products/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);

@@ -6,6 +6,7 @@ import { Search, Filter, Barcode, Plus, Minus, X, CreditCard } from 'lucide-reac
 import { getProducts, Product } from '@/services/productService';
 import { useCart } from '@/contexts/CartContext';
 import { PLACEHOLDER_IMAGE } from '@/components/PlaceholderImage';
+import { formatCurrency } from '@/lib/currency';
 
 export default function SalePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -131,11 +132,11 @@ export default function SalePage() {
                         <div>
                           {product.regular_price !== product.price ? (
                             <div>
-                              <span className="text-sm line-through text-gray-400">${product.regular_price}</span>
-                              <span className="text-lg font-bold text-gray-900 ml-2">${product.price}</span>
+                              <span className="text-sm line-through text-gray-400">{formatCurrency(parseFloat(product.regular_price))}</span>
+                              <span className="text-lg font-bold text-gray-900 ml-2">{formatCurrency(parseFloat(product.price))}</span>
                             </div>
                           ) : (
-                            <span className="text-lg font-bold text-gray-900">${product.price}</span>
+                            <span className="text-lg font-bold text-gray-900">{formatCurrency(parseFloat(product.price))}</span>
                           )}
                           <div className="text-sm text-gray-500">
                             Stock: {product.stock_quantity}
@@ -183,7 +184,7 @@ export default function SalePage() {
                   </div>
                   <div className="flex-1">
                     <h4 className="text-sm font-medium">{item.name}</h4>
-                    <div className="text-sm text-gray-500">${item.price.toFixed(2)}</div>
+                    <div className="text-sm text-gray-500">{formatCurrency(item.price)}</div>
                     <div className="flex items-center mt-2">
                       <button 
                         className="p-1 border border-gray-300 rounded-l-md hover:bg-gray-100"
@@ -201,7 +202,7 @@ export default function SalePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">${(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="font-medium">{formatCurrency(item.price * item.quantity)}</div>
                     <button 
                       className="text-red-500 hover:text-red-700 mt-2"
                       onClick={() => handleRemoveFromCart(item.id)}
@@ -224,11 +225,11 @@ export default function SalePage() {
         <div className="border-t border-gray-200 p-4">
           <div className="flex justify-between mb-2">
             <span className="text-gray-600">Subtotal (excl.)</span>
-            <span className="font-medium">${subtotal.toFixed(2)}</span>
+            <span className="font-medium">{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between mb-4">
             <span className="text-gray-600 font-bold">Total</span>
-            <span className="font-bold text-lg">${total.toFixed(2)}</span>
+            <span className="font-bold text-lg">{formatCurrency(total)}</span>
           </div>
           
           <div className="grid grid-cols-2 gap-2">

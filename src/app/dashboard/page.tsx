@@ -19,6 +19,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { getOrders, getProducts, getCustomers } from '@/lib/api/woocommerce';
+import { formatCurrency } from '@/lib/currency';
 
 // Keeping sales mock data for now
 const mockSalesData = {
@@ -139,7 +140,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard 
             title="Total Sales" 
-            value={`$${mockSalesData.totalSales.toLocaleString()}`} 
+            value={formatCurrency(mockSalesData.totalSales)} 
             icon={DollarSign} 
             trend="12% from last month"
           />
