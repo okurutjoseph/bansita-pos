@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Search, ChevronLeft, ChevronRight, MoreHorizontal, Plus, X, Save } from 'lucide-react';
-import { getProducts, getProduct, Product } from '@/services/productService';
+import { getProducts, getProduct, prefetchProducts, Product } from '@/services/productService';
 import { PLACEHOLDER_IMAGE } from '@/components/PlaceholderImage';
 import { formatCurrency } from '@/lib/currency';
 
@@ -16,36 +16,49 @@ export default function ProductsPage() {
   const [updating, setUpdating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true);
-        const params = {
-          page,
+  // Load products with pagination
+  const loadProducts = useCallback(async (currentPage: number, search: string) => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        per_page: perPage,
+        search,
+      };
+      const data = await getProducts(params);
+      setProducts(data);
+      
+      // In a real app, you'd get the total pages from the API headers
+      // This is a simplified calculation
+      setTotalProducts(data.length > 0 ? data.length * 5 : 0); // Estimate total count
+      setTotalPages(Math.ceil(totalProducts / perPage));
+      
+      // Prefetch next page in the background
+      if (currentPage < totalPages) {
+        prefetchProducts({
+          page: currentPage + 1,
           per_page: perPage,
-          search: searchTerm,
-        };
-        const data = await getProducts(params);
-        setProducts(data);
-        
-        // In a real app, you'd get the total pages from the API headers
-        // This is a simplified calculation
-        setTotalPages(Math.ceil(data.length / perPage));
-      } catch (error) {
-        console.error('Failed to load products:', error);
-      } finally {
-        setLoading(false);
+          search,
+        });
       }
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    } finally {
+      setLoading(false);
     }
+  }, [perPage, totalProducts, totalPages]);
 
-    loadProducts();
-  }, [page, perPage, searchTerm]);
-
+  // Initial load
   useEffect(() => {
-    // Reset edited product when selected product changes
+    loadProducts(page, searchTerm);
+  }, [page, searchTerm, loadProducts]);
+
+  // Reset edited product when selected product changes
+  useEffect(() => {
     if (selectedProduct) {
       setEditedProduct({
         ...selectedProduct
@@ -55,12 +68,13 @@ export default function ProductsPage() {
     }
   }, [selectedProduct]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     setPage(1); // Reset to first page when searching
-  };
+    loadProducts(1, searchTerm);
+  }, [loadProducts, searchTerm]);
 
-  const handleSelectProduct = async (product: Product) => {
+  const handleSelectProduct = useCallback(async (product: Product) => {
     try {
       setDetailsLoading(true);
       // If we already have all the product details, just set it
@@ -81,21 +95,21 @@ export default function ProductsPage() {
     } finally {
       setDetailsLoading(false);
     }
-  };
+  }, []);
 
-  const handleCloseDetails = () => {
+  const handleCloseDetails = useCallback(() => {
     setSelectedProduct(null);
     setEditedProduct({});
-  };
+  }, []);
 
-  const handleInputChange = (field: keyof Product, value: string | number) => {
+  const handleInputChange = useCallback((field: keyof Product, value: string | number) => {
     setEditedProduct(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
-  const handleUpdateProduct = async () => {
+  const handleUpdateProduct = useCallback(async () => {
     if (!selectedProduct || !editedProduct) return;
     
     try {
@@ -126,7 +140,71 @@ export default function ProductsPage() {
     } finally {
       setUpdating(false);
     }
-  };
+  }, [selectedProduct, editedProduct]);
+
+  // Memoize the product list to prevent unnecessary re-renders
+  const productList = useMemo(() => {
+    return products.map((product) => (
+      <tr 
+        key={product.id} 
+        className={`hover:bg-gray-50 cursor-pointer ${selectedProduct?.id === product.id ? 'bg-blue-50' : ''}`} 
+        onClick={() => handleSelectProduct(product)}
+      >
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex items-center">
+            <div className="h-20 w-20 relative flex-shrink-0">
+              <Image
+                src={product.images && product.images.length > 0 ? product.images[0].src : PLACEHOLDER_IMAGE}
+                alt={product.name}
+                fill
+                className="object-cover rounded-md"
+                loading="lazy"
+                sizes="80px"
+              />
+            </div>
+            <div className="ml-4">
+              <div className="text-sm font-medium text-gray-900">{product.name}</div>
+            </div>
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm text-gray-900">{product.sku || 'N/A'}</div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          {product.regular_price !== product.price ? (
+            <div>
+              <span className="text-sm line-through text-gray-400">{formatCurrency(product.regular_price)}</span>
+              <span className="text-sm font-medium text-gray-900 ml-2">{formatCurrency(product.price)}</span>
+            </div>
+          ) : (
+            <div className="text-sm font-medium text-gray-900">{formatCurrency(product.price)}</div>
+          )}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm text-gray-900">
+            {product.stock_quantity !== null && product.stock_quantity !== undefined
+              ? product.stock_quantity
+              : 'N/A'}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="text-sm text-gray-900">
+            {product.categories && product.categories.length > 0
+              ? product.categories.map(cat => cat.name).join(', ')
+              : 'Uncategorized'}
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <button className="text-gray-400 hover:text-gray-500" onClick={(e) => {
+            e.stopPropagation();
+            handleSelectProduct(product);
+          }}>
+            <MoreHorizontal size={16} />
+          </button>
+        </td>
+      </tr>
+    ));
+  }, [products, selectedProduct, handleSelectProduct]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -134,10 +212,12 @@ export default function ProductsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="flex justify-between items-center p-6 mb-2">
           <h2 className="text-2xl font-bold">Products</h2>
-          <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            <Plus size={16} />
-            <span>Add Product</span>
-          </button>
+          <div className="flex gap-4">
+            <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+              <Plus size={16} />
+              <span>Add Product</span>
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden mx-6">
@@ -163,7 +243,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="overflow-x-auto">
-            {loading ? (
+            {loading && products.length === 0 ? (
               <div className="text-center py-10">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
                 <p className="mt-2 text-gray-500">Loading products...</p>
@@ -193,64 +273,7 @@ export default function ProductsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
-                    <tr 
-                      key={product.id} 
-                      className={`hover:bg-gray-50 cursor-pointer ${selectedProduct?.id === product.id ? 'bg-blue-50' : ''}`} 
-                      onClick={() => handleSelectProduct(product)}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-20 w-20 relative flex-shrink-0">
-                            <Image
-                              src={product.images && product.images.length > 0 ? product.images[0].src : PLACEHOLDER_IMAGE}
-                              alt={product.name}
-                              fill
-                              className="object-cover rounded-md"
-                            />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{product.sku || 'N/A'}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {product.regular_price !== product.price ? (
-                          <div>
-                            <span className="text-sm line-through text-gray-400">{formatCurrency(product.regular_price)}</span>
-                            <span className="text-sm font-medium text-gray-900 ml-2">{formatCurrency(product.price)}</span>
-                          </div>
-                        ) : (
-                          <div className="text-sm font-medium text-gray-900">{formatCurrency(product.price)}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {product.stock_quantity !== null && product.stock_quantity !== undefined
-                            ? product.stock_quantity
-                            : 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {product.categories && product.categories.length > 0
-                            ? product.categories.map(cat => cat.name).join(', ')
-                            : 'Uncategorized'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button className="text-gray-400 hover:text-gray-500" onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectProduct(product);
-                        }}>
-                          <MoreHorizontal size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {productList}
                 </tbody>
               </table>
             ) : (
@@ -293,7 +316,7 @@ export default function ProductsPage() {
         </div>
       </div>
       
-      {/* Product Details Section - Always visible */}
+      {/* Product Details Panel */}
       <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">
           <h3 className="text-lg font-semibold">
@@ -325,6 +348,7 @@ export default function ProductsPage() {
                   alt={selectedProduct.name}
                   fill
                   className="object-contain"
+                  loading="lazy"
                 />
               </div>
               
@@ -455,4 +479,4 @@ export default function ProductsPage() {
       </div>
     </div>
   );
-} 
+}
