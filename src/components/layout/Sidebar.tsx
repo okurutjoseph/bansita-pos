@@ -37,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       href: '/dashboard/new-order',
       icon: PlusCircle,
       active: pathname === '/dashboard/new-order',
+      isNewOrder: true,
     },
     {
       label: 'Sale',
@@ -72,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
   return (
     <ErrorBoundary>
-      <div className={`flex flex-col h-full bg-blue-500 text-white ${collapsed ? 'w-20' : 'w-24'} transition-all duration-300 ${className}`}>
+      <div className={`flex flex-col h-full bg-[#f2f2f7] text-gray-700 ${collapsed ? 'w-20' : 'w-24'} transition-all duration-300 ${className}`}>
         <div className="flex justify-center items-center py-4">
           <Link href="/dashboard">
             <div className="flex flex-col items-center">
@@ -95,7 +96,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 key={item.href} 
                 href={item.href}
                 className={`flex flex-col items-center p-2 rounded-md w-full ${
-                  item.active ? 'bg-blue-600' : 'hover:bg-blue-600'
+                  item.isNewOrder 
+                    ? 'hover:bg-[#f05624] active:bg-[#f05624] focus:bg-[#f05624]' + (item.active ? ' bg-[#f05624] text-white' : '')
+                    : item.active 
+                      ? 'bg-white hover:bg-white text-blue-600' 
+                      : 'hover:bg-gray-200'
                 }`}
               >
                 <item.icon className={`${collapsed ? 'h-6 w-6' : 'h-6 w-6'}`} />
@@ -108,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         <div className="p-4 flex flex-col items-center">
           <button 
             onClick={() => signOut()}
-            className="flex flex-col items-center hover:bg-blue-600 p-2 rounded-md w-full"
+            className="flex flex-col items-center hover:bg-gray-200 p-2 rounded-md w-full"
           >
             <LogOut className={`${collapsed ? 'h-6 w-6' : 'h-6 w-6'}`} />
             {!collapsed && <span className="mt-1 text-xs">Logout</span>}
@@ -116,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           
           <button 
             onClick={toggleSidebar} 
-            className="mt-4 p-2 bg-blue-600 rounded-full hover:bg-blue-700"
+            className="mt-4 p-2 bg-gray-300 rounded-full hover:bg-gray-400"
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
